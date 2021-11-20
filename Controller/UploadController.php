@@ -104,7 +104,7 @@ class UploadController extends Controller
         );
 
         $response->setCallback(function () use($handlerConfig, $errorMessages) {
-            new UploadHandler($handlerConfig, true, $errorMessages);
+            new UploadHandler($handlerConfig, true, $errorMessages, $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader'));
         });
 
         return $response->send();
@@ -158,15 +158,9 @@ class UploadController extends Controller
 
         $imageName = $params['imageName'];
 
-        $src = $uploadUrl.'/'.$imageName;
+       # $src = $uploadUrl.'/'.$imageName;
+        $src = $imageName;
 
-        // if($disableCrop){
-        //     list($w, $h) = getimagesize($src);
-        //     if($config['cropConfig']['aspectRatio'])
-        //     {
-        //         list($w, $h) = $this->getMaxCropValues($w, $h, $tarW, $tarH);
-        //     }
-        // }
 
         if (!is_dir($uploadUrl.'/'.$this->container->getParameter('comur_image.cropped_image_dir').'/')) {
             mkdir($uploadUrl.'/'.$this->container->getParameter('comur_image.cropped_image_dir').'/', 0755, true);
@@ -214,7 +208,8 @@ class UploadController extends Controller
 
 
         //Create thumbs if asked
-        $previewSrc = '/'.$config['uploadConfig']['webDir'] . '/' . $this->container->getParameter('comur_image.cropped_image_dir') . '/'. $imageName;
+        $previewSrc = $config['uploadConfig']['webDir'] . '/' . $this->container->getParameter('comur_image.cropped_image_dir') . '/'. $imageName;
+        $previewSrc = str_replace('//', '/', $previewSrc);
         if(isset($config['cropConfig']['thumbs']) && ($thumbs = $config['cropConfig']['thumbs']) && count($thumbs))
         {
             $thumbDir = $uploadUrl.'/'.$this->container->getParameter('comur_image.cropped_image_dir') . '/' . $this->container->getParameter('comur_image.thumbs_dir').'/';
@@ -246,8 +241,8 @@ class UploadController extends Controller
         }
 
         return new Response(json_encode(array('success' => true,
-                                              'filename'=>$this->container->getParameter('comur_image.cropped_image_dir').'/'.$imageName,
-                                              'previewSrc' => $previewSrc,
+                                              'filename'=> $config['uploadConfig']['webDir'] .$this->container->getParameter('comur_image.cropped_image_dir').'/'.$imageName,
+                                              'previewSrc' => $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->getRealPath($previewSrc),
                                               'galleryThumb' => $this->container->getParameter('comur_image.cropped_image_dir') . '/' . $this->container->getParameter('comur_image.thumbs_dir').'/'.$gThumbSize.'x'.$gThumbSize.'-' .$imageName)));
     }
 
@@ -358,6 +353,11 @@ class UploadController extends Controller
     {
         $type = strtolower(pathinfo($imgSrc, PATHINFO_EXTENSION));
 
+        $distantSrc = $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->getRealPath($imgSrc);
+        $tmpfname = tempnam("/tmp", "UL_IMAGE");
+        $img = file_get_contents($distantSrc);
+        file_put_contents($tmpfname, $img);
+
         switch ($type) {
             case 'jpg':
             case 'jpeg':
@@ -366,8 +366,8 @@ class UploadController extends Controller
                 $imageQuality = 100;
                 break;
             case 'gif':
-                if ($this->isGifAnimated($imgSrc) && extension_loaded('imagick')) {
-                    $image = new \Imagick($imgSrc);
+                if ($this->isGifAnimated($tmpfname) && extension_loaded('imagick')) {
+                    $image = new \Imagick($tmpfname);
 
                     $image = $image->coalesceImages();
 
@@ -395,7 +395,7 @@ class UploadController extends Controller
                 return false;
         }
 
-        $imgR = $srcFunc($imgSrc);
+        $imgR = $srcFunc($tmpfname);
 
         if(round($srcW/$srcH, 2) != round($destW/$destH, 2)){
             $destW = $srcW;
@@ -421,6 +421,8 @@ class UploadController extends Controller
         }
 
         $writeFunc($dstR,$destSrc,$imageQuality);
+
+        $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->uploadFile(new UploadedFile($destSrc, pathinfo($imgSrc, PATHINFO_BASENAME)), $destSrc);
     }
 
     /**

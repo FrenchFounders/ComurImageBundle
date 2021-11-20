@@ -11,6 +11,9 @@
  */
 namespace Comur\ImageBundle\Handler;
 
+use Common\Domain\Uploader\UploaderInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 class UploadHandler
 {
 
@@ -41,7 +44,10 @@ class UploadHandler
 
     protected $image_objects = array();
 
-    function __construct($options = null, $initialize = true, $error_messages = null) {
+    private $uploader;
+
+    function __construct($options = null, $initialize = true, $error_messages = null, UploaderInterface $uploader) {
+        $this->uploader = $uploader;
         $this->options = array(
             'script_url' => $this->get_full_url().'/',
             'upload_dir' => dirname($this->get_server_var('SCRIPT_FILENAME')).'/files/',
@@ -224,7 +230,13 @@ class UploadHandler
         return strpos($url, '?') === false ? '?' : '&';
     }
 
+    protected function get_aws_url($path)
+    {
+        return $this->uploader->getRealPath($path);
+    }
+
     protected function get_download_url($file_name, $version = null, $direct = false) {
+
         if (!$direct && $this->options['download_via_php']) {
             $url = $this->options['script_url']
                 .$this->get_query_separator($this->options['script_url'])
@@ -1040,6 +1052,13 @@ class UploadHandler
             $append_file = $content_range && is_file($file_path) &&
                 $file->size > $this->get_file_size($file_path);
             if ($uploaded_file && is_uploaded_file($uploaded_file)) {
+
+
+                $this->uploader->uploadFile(new UploadedFile($uploaded_file, $file->name), $file_path);
+                $file->url = $this->get_aws_url($file_path);
+                $file->path = $file_path;
+
+                /*
                 // multipart/formdata uploads (POST method uploads)
                 if ($append_file) {
                     file_put_contents(
@@ -1049,7 +1068,7 @@ class UploadHandler
                     );
                 } else {
                     move_uploaded_file($uploaded_file, $file_path);
-                }
+                }*/
             } else {
                 // Non-multipart uploads (PUT method support)
                 file_put_contents(
@@ -1058,7 +1077,7 @@ class UploadHandler
                     $append_file ? FILE_APPEND : 0
                 );
             }
-            $file_size = $this->get_file_size($file_path, $append_file);
+            /*$file_size = $this->get_file_size($file_path, $append_file);
             if ($file_size === $file->size) {
                 $file->url = $this->get_download_url($file->name);
                 if ($this->is_valid_image_file($file_path)) {
@@ -1070,7 +1089,7 @@ class UploadHandler
                     unlink($file_path);
                     $file->error = $this->get_error_message('abort');
                 }
-            }
+            }*/
             $this->set_additional_file_properties($file);
         }
         return $file;
@@ -1095,7 +1114,7 @@ class UploadHandler
     protected function body($str) {
         echo $str;
     }
-    
+
     protected function header($str) {
         header($str);
     }
