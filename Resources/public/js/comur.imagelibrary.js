@@ -31,7 +31,6 @@ function initializeImageManager(id, options, cb){
             data: {dir: options.uploadConfig.libraryDir},
             success: function(response){
                 var response = $.parseJSON(response);
-                // console.log(response);
                 var files = response.files;
                 // console.log(files);
                 for (var i = files.length - 1; i >= 0; i--) {

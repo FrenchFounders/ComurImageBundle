@@ -241,7 +241,7 @@ class UploadController extends Controller
         }
 
         return new Response(json_encode(array('success' => true,
-                                              'filename'=> $config['uploadConfig']['webDir'] .$this->container->getParameter('comur_image.cropped_image_dir').'/'.$imageName,
+                                              'filename'=> $this->container->getParameter('comur_image.cropped_image_dir').'/'.$imageName,
                                               'previewSrc' => $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->getRealPath($previewSrc),
                                               'galleryThumb' => $this->container->getParameter('comur_image.cropped_image_dir') . '/' . $this->container->getParameter('comur_image.thumbs_dir').'/'.$gThumbSize.'x'.$gThumbSize.'-' .$imageName)));
     }
