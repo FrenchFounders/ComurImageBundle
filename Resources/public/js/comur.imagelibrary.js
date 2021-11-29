@@ -36,13 +36,22 @@ function initializeImageManager(id, options, cb){
                 for (var i = files.length - 1; i >= 0; i--) {
                     var now = new Date().getTime();
                     //$('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img src="/'+options.uploadConfig.webDir + '/'+response['thumbsDir']+'/'+files[i]+'?'+now+'"/></div>');
-                    $('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img src="'+files[i]+'?'+now+'"/></div>');
+                    $('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img height="150" width="150" class="lozad" data-src="'+files[i]+'?'+now+'"/></div>');
                 };
 
                 $('.image-container').click(function(){
                     $('#selected_image').val($(this).attr('data-src'));
                     initJCrop(id, options);
                 });
+
+                lozad('.lozad', {
+                    load: function(el) {
+                        el.src = el.dataset.src;
+                        el.onload = function() {
+                            el.classList.add('fadea')
+                        }
+                    }
+                }).observe()
 
             },
             type: 'POST'
