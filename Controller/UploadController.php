@@ -72,7 +72,7 @@ class UploadController extends Controller
             'image_versions' => array(
                 'thumbnail' => array(
                     'upload_dir' => $uploadUrl.$thumbsDir.'/',
-                    'upload_url' => $config['uploadConfig']['webDir'].'/'.$thumbsDir.'/',
+                    'upload_url' => $config['uploadConfig']['webDir'].$thumbsDir.'/',
                     'crop' => true,
                     'max_width' => $thumbSize,
                     'max_height' => $thumbSize
@@ -210,6 +210,7 @@ class UploadController extends Controller
         //Create thumbs if asked
         $previewSrc = $config['uploadConfig']['webDir'] . '/' . $this->container->getParameter('comur_image.cropped_image_dir') . '/'. $imageName;
         $previewSrc = str_replace('//', '/', $previewSrc);
+
         if(isset($config['cropConfig']['thumbs']) && ($thumbs = $config['cropConfig']['thumbs']) && count($thumbs))
         {
             $thumbDir = $uploadUrl.'/'.$this->container->getParameter('comur_image.cropped_image_dir') . '/' . $this->container->getParameter('comur_image.thumbs_dir').'/';
@@ -217,8 +218,6 @@ class UploadController extends Controller
             {
                 mkdir($thumbDir);
             }
-
-
 
             foreach($thumbs as $thumb){
                 $maxW = $thumb['maxWidth'];
@@ -300,7 +299,21 @@ class UploadController extends Controller
      *
      * @param Request $request
      */
-    public function getLibraryImagesAction(Request $request){
+    public function getLibraryImagesAction(Request $request)
+    {
+        $result = [];
+
+        $result['files'] = $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->listFolder($request->request->get('dir'));
+        return new Response(json_encode($result));
+/*
+ files: ["3145e040ae6aeb30ee02284c84f4d19664a33916.png", "41d451f10ec1d7fcfa8a53d222313925e4ce3f44.png",…]
+0: "3145e040ae6aeb30ee02284c84f4d19664a33916.png"
+1: "41d451f10ec1d7fcfa8a53d222313925e4ce3f44.png"
+2: "8e27f986e0b940338f6954117ce751b8c6126b2d.png"
+3: "9a43d02bb79594dc2c0ae4f0d3cf30b7faf34266.sketch"
+4: "d86f7733c4d8c87863f83aeda52064b90c18d644.png"
+thumbsDir: "thumbnail"
+ */
         $finder = new Finder();
 
         $finder->sortByType();
@@ -353,7 +366,12 @@ class UploadController extends Controller
     {
         $type = strtolower(pathinfo($imgSrc, PATHINFO_EXTENSION));
 
-        $distantSrc = $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->getRealPath($imgSrc);
+        if (preg_match('/https/', $imgSrc)) {
+            // case of cropping an existing image
+            $distantSrc = $imgSrc;
+        } else {
+            $distantSrc = $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->getRealPath($imgSrc);
+        }
         $tmpfname = tempnam("/tmp", "UL_IMAGE");
         $img = file_get_contents($distantSrc);
         file_put_contents($tmpfname, $img);

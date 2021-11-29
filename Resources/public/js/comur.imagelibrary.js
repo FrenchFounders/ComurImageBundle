@@ -35,7 +35,8 @@ function initializeImageManager(id, options, cb){
                 // console.log(files);
                 for (var i = files.length - 1; i >= 0; i--) {
                     var now = new Date().getTime();
-                    $('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img src="/'+options.uploadConfig.webDir + '/'+response['thumbsDir']+'/'+files[i]+'?'+now+'"/></div>');
+                    //$('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img src="/'+options.uploadConfig.webDir + '/'+response['thumbsDir']+'/'+files[i]+'?'+now+'"/></div>');
+                    $('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img src="'+files[i]+'?'+now+'"/></div>');
                 };
 
                 $('.image-container').click(function(){
@@ -160,6 +161,13 @@ function updateCoords(coords){
 }
 
 function initJCrop(id, options, result){
+    var img;
+    if (result) {
+        img = result.url;
+    } else {
+        img = $('#selected_image').val();
+    }
+
     if(api){
         api.destroy();
     }
@@ -167,7 +175,7 @@ function initJCrop(id, options, result){
         var now = new Date().getTime();
         $('#image_preview img').remove();
         //$('#image_preview').html('<img src="/'+options.uploadConfig.webDir + '/'+$('#selected_image').val()+'?'+now+'" id="image_preview_image"/>');
-        $('#image_preview').html('<img src='+result.url+'?'+now+'" id="image_preview_image"/>');
+        $('#image_preview').html('<img src='+img+'?'+now+'" id="image_preview_image"/>');
         $($('#image_preview img')[0]).on('load', function(){
 
 
