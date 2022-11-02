@@ -2,6 +2,11 @@ parameters:
     comur_image_type_class: Comur\ImageBundle\Form\Type\CroppableImageType
     comur_gallery_type_class: Comur\ImageBundle\Form\Type\CroppableGalleryType
 services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+    Comur\ImageBundle\Controller\UploadController:
+        tags: ['controller.service_arguments']
     comur_image_bundle.image_type:
         class: "%comur_image_type_class%"
         tags:
