@@ -12,9 +12,9 @@
             <div id="{{form[name].vars.id}}_widget_error" class="alert alert-danger span6">
             </div>
         </div>
-        <div class="image_preview select-image-button" id="image_preview_{{ form[name].vars.id }}" style="z-index: 1050">
+        <div class="image_preview select-image-button {{ form[name].vars.value ? '' : 'hide-disabled' }}" id="image_preview_{{ form[name].vars.id }}" style="z-index: 1050">
             <div class="image_edit_button">
-                <span class="btn btn-success select-image-button">
+                <span class="btn btn-success select-image-button {{ form[name].vars.value ? '' : 'hide-disabled' }}">
                     <i class="fa fa-pencil"></i> {% trans %}Edit{% endtrans %}
                 </span>
             </div>
