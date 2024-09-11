@@ -1,14 +1,14 @@
 var galleries = {};
 
 $(function(){
-    $('.fileinput-button').click(function(event){ 
+    $('.fileinput-button').click(function(event){
         if( $( event.target ).is( "span" ) )
         {
             // console.log('click');
             $('#image_upload_file').click();
             event.stopPropagation();
             return false;
-        } 
+        }
     });
 
 });
@@ -17,8 +17,8 @@ function initializeImageManager(id, options, cb){
     if (typeof cb === 'function') {
         options.callback = cb;
     }
-    if((typeof options.uploadConfig.library == 'undefined' || options.uploadConfig.library) 
-        && typeof options.uploadConfig.libraryDir != 'undefined' 
+    if((typeof options.uploadConfig.library == 'undefined' || options.uploadConfig.library)
+        && typeof options.uploadConfig.libraryDir != 'undefined'
         && options.uploadConfig.libraryRoute != 'undefined'
         && (options.uploadConfig.showLibrary == 'undefined'
         || options.uploadConfig.showLibrary))
@@ -31,18 +31,27 @@ function initializeImageManager(id, options, cb){
             data: {dir: options.uploadConfig.libraryDir},
             success: function(response){
                 var response = $.parseJSON(response);
-                // console.log(response);
                 var files = response.files;
                 // console.log(files);
                 for (var i = files.length - 1; i >= 0; i--) {
                     var now = new Date().getTime();
-                    $('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img src="/'+options.uploadConfig.webDir + '/'+response['thumbsDir']+'/'+files[i]+'?'+now+'"/></div>');
+                    //$('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img src="/'+options.uploadConfig.webDir + '/'+response['thumbsDir']+'/'+files[i]+'?'+now+'"/></div>');
+                    $('#existing-images').append('<div class="image-container" data-src="'+files[i]+'"><img height="150" width="150" class="lozad" data-src="'+files[i]+'?'+now+'"/></div>');
                 };
-                
+
                 $('.image-container').click(function(){
                     $('#selected_image').val($(this).attr('data-src'));
                     initJCrop(id, options);
                 });
+
+                lozad('.lozad', {
+                    load: function(el) {
+                        el.src = el.dataset.src;
+                        el.onload = function() {
+                            el.classList.add('fadea')
+                        }
+                    }
+                }).observe()
 
             },
             type: 'POST'
@@ -96,8 +105,9 @@ function initializeImageManager(id, options, cb){
                 // console.log(data.result, data.result['image_upload_file']);
                 // $('#image_preview img').remove();
                 // $('#image_preview').html('<img src="/'+data.result['image_upload_file'][0].url+'" id="image_preview_image"/>');
-                $('#selected_image').val(data.result['image_upload_file'][0].name); 
+                $('#selected_image').val(data.result['image_upload_file'][0].path);
                 if (options.cropConfig.disable) {
+                    alert('ASK JOHN TO DEBUG');
                     $('#'+id).val(data.result['image_upload_file'][0].name);
                     $('#image_preview_image_'+id).html('<img src="'+options.uploadConfig.webDir + '/' + data.result['image_upload_file'][0].name +'?'+ new Date().getTime()+'" id="'+id+'_preview"/>');
                     reinitModal();
@@ -106,10 +116,10 @@ function initializeImageManager(id, options, cb){
                         filename: data.result['image_upload_file'][0].name
                     });
                 } else {
-                    initJCrop(id, options);
+                    initJCrop(id, options, data.result['image_upload_file'][0]);
                 }
             }
-            
+
         },
         progressall: function (e, data) {
             var progress = parseInt(data.loaded / data.total * 100, 10);
@@ -159,17 +169,25 @@ function updateCoords(coords){
     c = coords;
 }
 
-function initJCrop(id, options){
+function initJCrop(id, options, result){
+    var img;
+    if (result) {
+        img = result.url;
+    } else {
+        img = $('#selected_image').val();
+    }
+
     if(api){
         api.destroy();
     }
     // if(!options.cropConfig.disableCrop){
         var now = new Date().getTime();
         $('#image_preview img').remove();
-        $('#image_preview').html('<img src="/'+options.uploadConfig.webDir + '/'+$('#selected_image').val()+'?'+now+'" id="image_preview_image"/>');
+        //$('#image_preview').html('<img src="/'+options.uploadConfig.webDir + '/'+$('#selected_image').val()+'?'+now+'" id="image_preview_image"/>');
+        $('#image_preview').html('<img src='+img+'?'+now+'" id="image_preview_image"/>');
         $($('#image_preview img')[0]).on('load', function(){
 
-            
+
             $('#image_preview img').Jcrop({
                 // start off with jcrop-light class
                 bgOpacity: 0.8,
@@ -177,7 +195,7 @@ function initJCrop(id, options){
                 addClass: 'jcrop-dark',
                 aspectRatio: options.cropConfig.aspectRatio ? options.cropConfig.minWidth/options.cropConfig.minHeight : false ,
                 minSize: [ options.cropConfig.minWidth, options.cropConfig.minHeight ],
-                boxWidth: 600, 
+                boxWidth: 600,
                 boxHeight: 400,
                 onSelect: updateCoords
             },function(){
@@ -197,7 +215,7 @@ function initJCrop(id, options){
             api.setSelect([
                 parseInt(($('#image_preview_image').width() - selectionWidth)/2),
                 parseInt(($('#image_preview_image').height() - selectionHeight)/2),
-                selectionWidth, 
+                selectionWidth,
                 selectionHeight
             ]);
             //$('#image_crop').addClass('hidden');
@@ -221,17 +239,17 @@ function cropImage(id, options){
         type: 'POST',
         data: {
             'config': JSON.stringify(options),
-            'imageName': $('#selected_image').val(), 
-            'x': c.x, 
-            'y': c.y, 
-            'w': c.w, 
+            'imageName': $('#selected_image').val(),
+            'x': c.x,
+            'y': c.y,
+            'w': c.w,
             'h': c.h
         },
         success: function(data){
             var data = $.parseJSON(data);
             var filename = data.filename;
             var previewSrc = data.previewSrc;
-            
+
             // console.log('crop success');
             if (options.callback) {
                 options.callback(data);
@@ -262,7 +280,7 @@ function cropImage(id, options){
                 }
             }
 
-            
+
             destroyJCrop(id);
             reinitModal();
         },
@@ -291,14 +309,14 @@ function addImageToGallery(filename, id, thumb, options)
         '<span class="remove-image"><i class="fa fa-remove"></i></span>' +
         '<span class="gallery-image-helper"></span>' +
         '<input type="text" id="'+id+'_'+nb+'" name="'+name+'['+nb+']" style="padding:0; border: 0; margin: 0; opacity: 0;width: 0; max-width: 0; height: 0; max-height: 0;" value="'+filename+'">' +
-        '<img src="/'+options.uploadConfig.webDir + '/' + thumb+'?'+ new Date().getTime()+'"/>' +
+        '<img src="'+options.uploadConfig.webDir + '/' + thumb+'?'+ new Date().getTime()+'"/>' +
     '</div>');
     rebindGalleryRemove();
 }
 
 function removeImageFromGallery(filename, id)
 {
-    
+
     // ADD DELETE FILE HERE !
     $('#'+id).parent().remove();
     reorderItems(id);
@@ -318,7 +336,7 @@ function rebindGalleryRemove()
     $('.gallery-image-container span').unbind('click');
     $('.gallery-image-container span').click(function(){
         removeImageFromGallery($(this).parent().data('image'), $(this).parent().find('input').attr('id'));
-        return false; 
+        return false;
     });
 }
 
@@ -333,10 +351,10 @@ function destroyJCrop(){
 
 // function js_array_to_php_array (a)
 // This converts a javascript array to a string in PHP serialized format.
-// This is useful for passing arrays to PHP. On the PHP side you can 
+// This is useful for passing arrays to PHP. On the PHP side you can
 // unserialize this string from a cookie or request variable. For example,
 // assuming you used javascript to set a cookie called "php_array"
-// to the value of a javascript array then you can restore the cookie 
+// to the value of a javascript array then you can restore the cookie
 // from PHP like this:
 //    <?php
 //    session_start();
