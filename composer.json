@@ -24,7 +24,7 @@
         "twig/twig": "~2.5 || ~3.0",
         "twig/extra-bundle": "@stable",
         "friendsofsymfony/jsrouting-bundle": "@stable",
-	    "jms/translation-bundle": "^1.2.2"
+        "jms/translation-bundle": "^2.1"
     },
     "autoload": {
         "psr-4": {
