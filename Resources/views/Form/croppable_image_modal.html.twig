@@ -1,5 +1,4 @@
-{% trans_default_domain comur_translation_domain %}
-{# trans_default_domain 'ComurImageBundle' #}
+{% trans_default_domain 'ComurImageBundle' %}
 
 {{ render(controller('Comur\\ImageBundle\\Controller\\UploadController::getTranslationCatalogue')) }}
 
@@ -14,41 +13,41 @@
 {% set bv = bootstrap_version is defined ? bootstrap_version : (include_bootstrap is not defined or include_bootstrap ? 4 : 3) %}
 
 {% block comur_image_scripts %}
-{% if include_jquery is not defined or include_jquery %}
-    <!-- The jQuery script, can be omitted if jQuery is already included -->
-    <script src="{{ asset('bundles/comurimage/vendor/jquery/dist/jquery.min.js') }}"></script>
-{% endif %}
-<!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
-<script src="{{ asset('bundles/comurimage/js/jquery-ui.min.js') }}"></script>
-{#<script src="{{ asset('bundles/comurimage/vendor/blueimp-file-upload/js/vendor/jquery.ui.widget.js') }}"></script>#}
-<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
-<script src="{{ asset('bundles/comurimage/vendor/blueimp-file-upload/js/jquery.iframe-transport.js') }}"></script>
-<script src="{{ asset('bundles/comurimage/vendor/blueimp-file-upload/js/jquery.fileupload.js') }}"></script>
-<script src="{{ asset('bundles/comurimage/vendor/Jcrop/js/jquery.Jcrop.min.js') }}"></script>
-<script src="{{ asset('bundles/comurimage/vendor/Jcrop/js/jquery.color.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/lozad"></script>
+    {% if include_jquery is not defined or include_jquery %}
+        <!-- The jQuery script, can be omitted if jQuery is already included -->
+        <script src="{{ asset('bundles/comurimage/vendor/jquery/dist/jquery.min.js') }}"></script>
+    {% endif %}
+    <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+    {#<script src="{{ asset('bundles/comurimage/js/jquery-ui.min.js') }}"></script>#}
+    {#<script src="{{ asset('bundles/comurimage/vendor/blueimp-file-upload/js/vendor/jquery.ui.widget.js') }}"></script>#}
+    <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+    <script src="{{ asset('bundles/comurimage/vendor/blueimp-file-upload/js/jquery.iframe-transport.js') }}"></script>
+    <script src="{{ asset('bundles/comurimage/vendor/blueimp-file-upload/js/jquery.fileupload.js') }}"></script>
+    <script src="{{ asset('bundles/comurimage/vendor/Jcrop/js/jquery.Jcrop.min.js') }}"></script>
+    <script src="{{ asset('bundles/comurimage/vendor/Jcrop/js/jquery.color.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lozad"></script>
     {% if include_holder is not defined or include_holder %}
-    <script src="{{ asset('bundles/comurimage/vendor/holderjs/holder.min.js') }}"></script>
-{% endif %}
-{% if include_bootstrap is not defined or include_bootstrap %}
-    <script src="{{ asset('bundles/comurimage/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
-{% endif %}
-{% if include_fontawesome is not defined or include_fontawesome %}
-    <!-- The FontAwesome, can be omitted if FontAwesome is already included -->
-    <link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/Font-Awesome/css/all.min.css') }}" type="text/css" />
-    <link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/Font-Awesome/css/v4-shims.min.css') }}" type="text/css" />
-{% endif %}
-<!-- ComurImageBundle script. Do not remove this -->
-<script src="{{ asset('bundles/comurimage/js/comur.imagelibrary.js') }}"></script>
+        <script src="{{ asset('bundles/comurimage/vendor/holderjs/holder.min.js') }}"></script>
+    {% endif %}
+    {% if include_bootstrap is not defined or include_bootstrap %}
+        <script src="{{ asset('bundles/comurimage/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    {% endif %}
+    {% if include_fontawesome is not defined or include_fontawesome %}
+        <!-- The FontAwesome, can be omitted if FontAwesome is already included -->
+        <link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/Font-Awesome/css/all.min.css') }}" type="text/css" />
+        <link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/Font-Awesome/css/v4-shims.min.css') }}" type="text/css" />
+    {% endif %}
+    <!-- ComurImageBundle script. Do not remove this -->
+    <script src="{{ asset('bundles/comurimage/js/comur.imagelibrary.js') }}"></script>
 {% endblock %}
 
 {% block comur_image_stylesheets %}
-<link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/Jcrop/css/jquery.Jcrop.min.css') }}" type="text/css" />
-{% if include_bootstrap is not defined or include_bootstrap %}
-    <!-- The bootstrap stylesheet, can be omitted if already inclided -->
-    <link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/bootstrap/dist/css/bootstrap.min.css') }}" type="text/css" />
-{% endif %}
-<link rel="stylesheet" href="{{ asset('bundles/comurimage/css/comur.image_bundle.css') }}" type="text/css" />
+    <link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/Jcrop/css/jquery.Jcrop.min.css') }}" type="text/css" />
+    {% if include_bootstrap is not defined or include_bootstrap %}
+        <!-- The bootstrap stylesheet, can be omitted if already inclided -->
+        <link rel="stylesheet" href="{{ asset('bundles/comurimage/vendor/bootstrap/dist/css/bootstrap.min.css') }}" type="text/css" />
+    {% endif %}
+    <link rel="stylesheet" href="{{ asset('bundles/comurimage/css/comur.image_bundle.css') }}" type="text/css" />
 {% endblock %}
 
 <div id="image_upload_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="">
@@ -102,7 +101,6 @@
                             </div>
                         </div>
                         <div id="existing-images"></div>
-                        <input type="hidden" id="selected_image"/>
                     </div>
                     <!-- CROP IMAGE -->
                     <div class="tab-pane" id="crop-and-use">
@@ -111,6 +109,7 @@
                             <p class="text-danger text-center">{% trans %}Please select or upload an image{% endtrans %}</p>
                         </div>
                     </div>
+                    <input type="hidden" id="selected_image"/>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-danger" data-dismiss="modal">
@@ -121,10 +120,10 @@
                         <i class="fa fa-cut"></i>&nbsp;
                         {% trans %}Crop & Use !{% endtrans %}
                     </span>
-{#                    <span class="btn btn-danger hidden" id="image_crop_cancel">#}
-{#                        <i class="fa fa-ban"></i>&nbsp;#}
-{#                        {% trans %}Cancel{% endtrans %}#}
-{#                    </span>#}
+                    {#                    <span class="btn btn-danger hidden" id="image_crop_cancel">#}
+                    {#                        <i class="fa fa-ban"></i>&nbsp;#}
+                    {#                        {% trans %}Cancel{% endtrans %}#}
+                    {#                    </span>#}
                 </div>
             </div>
         </div>

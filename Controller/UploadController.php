@@ -2,6 +2,7 @@
 
 namespace Comur\ImageBundle\Controller;
 
+use Common\Infra\AWS\S3\AwsS3Uploader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +18,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class UploadController extends AbstractController
 {
     public function __construct(
-        private TranslatorInterface $translator
+        private TranslatorInterface $translator,
+        private AwsS3Uploader $uploader
     ) {
     }
 
@@ -110,7 +112,7 @@ class UploadController extends AbstractController
         );
 
         $response->setCallback(function () use($handlerConfig, $errorMessages) {
-            new UploadHandler($handlerConfig, true, $errorMessages, $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader'));
+            new UploadHandler($handlerConfig, true, $errorMessages, $this->uploader);
         });
 
         return $response->send();
@@ -247,7 +249,7 @@ class UploadController extends AbstractController
 
         return new Response(json_encode(array('success' => true,
                                               'filename'=> $this->getParameter('comur_image.cropped_image_dir').'/'.$imageName,
-                                              'previewSrc' => $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->getRealPath($previewSrc),
+                                              'previewSrc' => $this->uploader->getRealPath($previewSrc),
                                               'galleryThumb' => $this->getParameter('comur_image.cropped_image_dir') . '/' . $this->getParameter('comur_image.thumbs_dir').'/'.$gThumbSize.'x'.$gThumbSize.'-' .$imageName)));
     }
 
@@ -309,7 +311,7 @@ class UploadController extends AbstractController
     {
         $result = [];
 
-        $result['files'] = $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->listFolder($request->request->get('dir'));
+        $result['files'] = $this->uploader->listFolder($request->request->get('dir'));
         return new Response(json_encode($result));
 /*
  files: ["3145e040ae6aeb30ee02284c84f4d19664a33916.png", "41d451f10ec1d7fcfa8a53d222313925e4ce3f44.png",…]
@@ -376,7 +378,7 @@ thumbsDir: "thumbnail"
             // case of cropping an existing image
             $distantSrc = $imgSrc;
         } else {
-            $distantSrc = $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->getRealPath($imgSrc);
+            $distantSrc = $this->uploader->getRealPath($imgSrc);
         }
         $tmpfname = tempnam("/tmp", "UL_IMAGE");
         $img = file_get_contents($distantSrc);
@@ -446,7 +448,7 @@ thumbsDir: "thumbnail"
 
         $writeFunc($dstR,$destSrc,$imageQuality);
 
-        $this->container->get('Common\Infra\AWS\S3\AwsS3Uploader')->uploadFile(new UploadedFile($destSrc, pathinfo($imgSrc, PATHINFO_BASENAME)), $destSrc);
+        $this->uploader->uploadFile(new UploadedFile($destSrc, pathinfo($imgSrc, PATHINFO_BASENAME)), $destSrc);
     }
 
     /**
