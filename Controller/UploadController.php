@@ -170,15 +170,15 @@ class UploadController extends AbstractController
         $src = $imageName;
 
 
-        if (!is_dir($uploadUrl.'/'.$this->getParameter('comur_image.cropped_image_dir').'/')) {
-            mkdir($uploadUrl.'/'.$this->getParameter('comur_image.cropped_image_dir').'/', 0755, true);
+        if (!is_dir($uploadUrl.'/'.$this->getCroppedImageDir())) {
+            mkdir($uploadUrl.'/'.$this->getCroppedImageDir(), 0755, true);
         }
         $ext = pathinfo($imageName, PATHINFO_EXTENSION);
         //set uniq filename if defined inside the configuration
         if($config['uploadConfig']['generateFilename']){
             $imageName = sha1(uniqid(mt_rand(), true)).'.'.$ext;
         }
-        $destSrc = $uploadUrl.'/'.$this->getParameter('comur_image.cropped_image_dir').'/'.$imageName;
+        $destSrc = $uploadUrl.'/'.$this->getCroppedImageDir().$imageName;
         //$writeFunc($dstR,$src,$imageQuality);
 
         $destW = $w;
@@ -216,12 +216,12 @@ class UploadController extends AbstractController
 
 
         //Create thumbs if asked
-        $previewSrc = $config['uploadConfig']['webDir'] . '/' . $this->getParameter('comur_image.cropped_image_dir') . '/'. $imageName;
+        $previewSrc = $config['uploadConfig']['webDir'] . '/' . $this->getCroppedImageDir(). $imageName;
         $previewSrc = str_replace('//', '/', $previewSrc);
 
         if(isset($config['cropConfig']['thumbs']) && ($thumbs = $config['cropConfig']['thumbs']) && count($thumbs))
         {
-            $thumbDir = $uploadUrl.'/'.$this->getParameter('comur_image.cropped_image_dir') . '/' . $this->getParameter('comur_image.thumbs_dir').'/';
+            $thumbDir = $uploadUrl.'/'.$this->getCroppedImageDir() . $this->getParameter('comur_image.thumbs_dir').'/';
             if(!is_dir($thumbDir))
             {
                 mkdir($thumbDir);
@@ -242,15 +242,15 @@ class UploadController extends AbstractController
                 $thumbSrc = $thumbDir . $thumbName;
                 $this->resizeCropImage($thumbSrc, $destSrc, 0, 0, 0, 0, $w, $h, $destW, $destH);
                 if(isset($thumb['useAsFieldImage']) && $thumb['useAsFieldImage']){
-                    $previewSrc = '/'.$config['uploadConfig']['webDir'] . '/' . $this->getParameter('comur_image.cropped_image_dir') . '/'. $this->getParameter('comur_image.thumbs_dir'). '/' . $thumbName;
+                    $previewSrc = $config['uploadConfig']['webDir'] . '/' . $this->getCroppedImageDir(). $this->getParameter('comur_image.thumbs_dir'). '/' . $thumbName;
                 }
             }
         }
 
         return new Response(json_encode(array('success' => true,
-                                              'filename'=> $this->getParameter('comur_image.cropped_image_dir').'/'.$imageName,
+                                              'filename'=> $this->getCroppedImageDir().$imageName,
                                               'previewSrc' => $this->uploader->getRealPath($previewSrc),
-                                              'galleryThumb' => $this->getParameter('comur_image.cropped_image_dir') . '/' . $this->getParameter('comur_image.thumbs_dir').'/'.$gThumbSize.'x'.$gThumbSize.'-' .$imageName)));
+                                              'galleryThumb' => $this->getCroppedImageDir() . $this->getParameter('comur_image.thumbs_dir').'/'.$gThumbSize.'x'.$gThumbSize.'-' .$imageName)));
     }
 
     /**
@@ -464,5 +464,10 @@ thumbsDir: "thumbnail"
         return $this->render('@ComurImage/translations.html.twig', array(
             'messages' => $messages[$transDomain]
         ));
+    }
+
+    private function getCroppedImageDir()
+    {
+        return $this->getParameter('comur_image.cropped_image_dir') ? $this->getParameter('comur_image.cropped_image_dir').'/' : '';
     }
 }

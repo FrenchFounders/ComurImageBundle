@@ -25,7 +25,7 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('config')
                     ->addDefaultsIfNotSet()
                     ->children()
-                        ->scalarNode('cropped_image_dir')->defaultValue('cropped')->cannotBeEmpty()->end()
+                        ->scalarNode('cropped_image_dir')->defaultValue('cropped')->end()
                         ->scalarNode('thumbs_dir')->defaultValue('thumbnail')->cannotBeEmpty()->end()
                         ->scalarNode('gallery_dir')->defaultValue('gallery')->cannotBeEmpty()->end()
                         ->scalarNode('media_lib_thumb_size')->defaultValue(150)->cannotBeEmpty()->end()
