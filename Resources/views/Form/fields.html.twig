@@ -22,13 +22,13 @@
                     {% if form[name].vars.value %}
                         <img src="{{ options.uploadConfig.previewUrl }}?{{ 'now'  | date('U') }}" id="{{ form[name].vars.id }}_preview" style="{{ options.uploadConfig.saveOriginal ? 'cursor:hand; cursor: pointer' : ''}}"/>
                     {% else %}
-                        <img src="//via.placeholder.com/{{ options.cropConfig.minWidth }}x{{ options.cropConfig.minHeight}}" id="{{ form[name].vars.id }}_preview"/>
+                        <img src="https://placehold.co/{{ options.cropConfig.minWidth }}x{{ options.cropConfig.minHeight}}" id="{{ form[name].vars.id }}_preview"/>
                     {% endif %}
                 {% else %}
                     {% if form[name].vars.value %}
                         <img src="{{ options.uploadConfig.previewUrl|thumb(options.fieldImage.maxWidth, options.fieldImage.maxHeight) }}?{{ 'now'  | date('U') }}" id="{{ form[name].vars.id }}_preview" style="{{ options.uploadConfig.saveOriginal ? 'cursor:hand; cursor: pointer' : ''}}"/>
                     {% else %}
-                        <img src="//via.placeholder.com/{{ options.fieldImage.maxWidth }}x{{ options.fieldImage.maxHeight}}" id="{{ form[name].vars.id }}_preview"/>
+                        <img src="https://placehold.co/{{ options.fieldImage.maxWidth }}x{{ options.fieldImage.maxHeight}}" id="{{ form[name].vars.id }}_preview"/>
                     {% endif %}
                 {% endif %}
 
